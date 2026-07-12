@@ -2,111 +2,100 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NJ Shoes | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NJ Shoes | Input Massal</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
-            --danger: #ef4444;
-            --success: #10b981;
-            --radius: 16px;
-        }
-
-        body { 
-            background: var(--bg); color: var(--text); 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            max-width: 500px; margin: auto; padding: 20px;
-        }
-
-        .card { background: var(--card); padding: 20px; border-radius: var(--radius); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        h2 { font-size: 20px; margin-bottom: 15px; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; }
-        input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; }
-        input:focus { border-color: var(--primary); outline: none; ring: 2px solid #bfdbfe; }
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; background: var(--primary); color: white; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn:active { transform: scale(0.98); }
-
-        /* Toast Notif */
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; color: white; display: none; z-index: 1000; font-weight: 500; font-size: 14px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        :root { --primary: #2563eb; --bg: #f8fafc; --muted: #64748b; }
+        body { font-family: sans-serif; background: var(--bg); padding: 15px; max-width: 500px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .row { display: grid; grid-template-columns: 2fr 1fr 1.5fr auto; gap: 8px; margin-bottom: 10px; align-items: center; }
+        input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #e2e8f0; width: 100%; margin-bottom: 10px; }
+        .btn-save { background: var(--primary); color: white; width: 100%; }
+        .total-box { font-weight: bold; text-align: right; margin-top: 10px; font-size: 1.2em; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div id="toast"></div>
-
-<h2>📦 Tambah Barang</h2>
+<h3>Input Stok Massal</h3>
 <div class="card">
-    <div class="form-group"><label>Tanggal</label><input type="date" id="tgl"></div>
-    <div class="form-group"><label>Nama Barang</label><input type="text" id="barang" placeholder="Contoh: Nike Air"></div>
-    <div style="display:flex; gap: 10px;">
-        <div class="form-group" style="flex:1"><label>Qty</label><input type="number" id="qty" placeholder="0"></div>
-        <div class="form-group" style="flex:1"><label>Harga (rb)</label><input type="number" id="harga" placeholder="35"></div>
+    <div id="container">
+        <!-- Baris akan muncul di sini -->
     </div>
-    <button class="btn" id="btnSimpanBarang" onclick="simpanBarang()">Simpan Barang</button>
-</div>
-
-<h2>💸 Input Transfer</h2>
-<div class="card">
-    <div class="form-group"><label>Tanggal</label><input type="date" id="tglTF"></div>
-    <div class="form-group"><label>Nominal (Ribuan)</label><input type="number" id="nominalTF" placeholder="0"></div>
-    <div class="form-group"><label>Rincian</label><input type="text" id="rincianTF" placeholder="Catatan singkat..."></div>
-    <button class="btn" style="background: var(--success);" id="btnSimpanTransfer" onclick="simpanTransfer()">Simpan Transfer</button>
+    <button class="btn btn-add" onclick="addRow()">+ Tambah Barang</button>
+    <div class="total-box">Total: Rp <span id="grandTotal">0</span> rb</div>
+    <button class="btn btn-save" id="btnSave" onclick="saveData()">Simpan Semua Barang</button>
 </div>
 
 <script>
     const URL = "https://script.google.com/macros/s/AKfycby7AUYawCKgafTMGcGuuWxwsQbdNLguROdX5FSoVMISSgSx--dV9bparoRFReRb9lxQ/exec";
 
-    function showToast(msg, color) {
-        const t = document.getElementById("toast");
-        t.textContent = msg;
-        t.style.background = color;
-        t.style.display = "block";
-        setTimeout(() => t.style.display = "none", 3000);
+    function addRow(b = {barang: '', qty: 0, harga: 0}) {
+        const div = document.createElement('div');
+        div.className = 'row';
+        div.innerHTML = `
+            <input type="text" class="barang" placeholder="Nama" value="${b.barang}" oninput="updateTotal()">
+            <input type="number" class="qty" placeholder="Qty" value="${b.qty}" oninput="updateTotal()">
+            <input type="number" class="harga" placeholder="Harga" value="${b.harga}" oninput="updateTotal()">
+            <button onclick="this.parentElement.remove(); updateTotal()" style="color:red; border:none; background:none;">✕</button>
+        `;
+        document.getElementById('container').appendChild(div);
+        updateTotal();
     }
 
-    async function submitData(action, payload, btnId) {
-        const btn = document.getElementById(btnId);
-        btn.disabled = true;
-        btn.textContent = "Memproses...";
+    function updateTotal() {
+        let grandTotal = 0;
+        let data = [];
+        document.querySelectorAll('.row').forEach(r => {
+            const q = parseFloat(r.querySelector('.qty').value) || 0;
+            const h = parseFloat(r.querySelector('.harga').value) || 0;
+            grandTotal += (q * h);
+            data.push({barang: r.querySelector('.barang').value, qty: q, harga: h});
+        });
+        document.getElementById('grandTotal').innerText = grandTotal;
+        localStorage.setItem('tempData', JSON.stringify(data));
+    }
 
+    async function saveData() {
+        const rows = document.querySelectorAll('.row');
+        let data = [];
+        rows.forEach(r => {
+            if(r.querySelector('.barang').value) {
+                data.push({
+                    barang: r.querySelector('.barang').value,
+                    qty: r.querySelector('.qty').value,
+                    harga: r.querySelector('.harga').value
+                });
+            }
+        });
+
+        if(data.length === 0) return alert("Isi minimal satu barang");
+
+        const btn = document.getElementById('btnSave');
+        btn.innerText = "Mengirim...";
+        
         try {
-            const response = await fetch(URL, { method: "POST", body: JSON.stringify({ action, ...payload }) });
-            const res = await response.json();
-            showToast(res.status || "Berhasil!", "#10b981");
-        } catch (err) {
-            showToast("Gagal terhubung ke server", "#ef4444");
-        } finally {
-            btn.disabled = false;
-            btn.textContent = action === 'simpanBarang' ? "Simpan Barang" : "Simpan Transfer";
+            await fetch(URL, { method: "POST", body: JSON.stringify({ action: "simpanBulk", data: data }) });
+            alert("Berhasil disimpan!");
+            localStorage.removeItem('tempData');
+            location.reload();
+        } catch(e) { alert("Gagal, coba lagi."); }
+    }
+
+    // Load data lama jika ada
+    window.onload = () => {
+        const saved = JSON.parse(localStorage.getItem('tempData'));
+        if(saved && saved.length > 0) {
+            saved.forEach(item => addRow(item));
+        } else {
+            addRow();
         }
-    }
+    };
+</script>
 
-    function simpanBarang() {
-        const data = {
-            tanggal: document.getElementById("tgl").value,
-            qty: document.getElementById("qty").value,
-            barang: document.getElementById("barang").value,
-            harga: document.getElementById("harga").value
-        };
-        if(!data.barang) return showToast("Nama barang wajib diisi", "#f59e0b");
-        submitData("simpanBarang", data, "btnSimpanBarang");
-    }
-
-    function simpanTransfer() {
-        const data = {
-            tanggal: document.getElementById("tglTF").value,
-            nominal: document.getElementById("nominalTF").value,
-            rincian: document.getElementById("rincianTF").value
+</body>
+</html>
         };
         if(!data.nominal) return showToast("Nominal wajib diisi", "#f59e0b");
         submitData("simpanTransfer", data, "btnSimpanTransfer");

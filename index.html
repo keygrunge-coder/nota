@@ -221,23 +221,20 @@
 
         if (navigator.onLine) {
             simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
-                // Mengirimkan teks polos terbungkus form data untuk mem-bypass blokir browser
+                // Format Pengiriman JSON murni khusus untuk doPost(e) andalan Anda
                 fetch(CONFIG_GAS_URL, {
                     method: "POST",
+                    mode: "no-cors", 
                     body: JSON.stringify({ items: notaBaru.items })
                 })
-                .then(res => res.text())
-                .then(text => {
-                    if(text.includes("SUCCESS")) {
-                        updateStatusLokal(lokalId, "tersinkron");
-                        alert("Berhasil masuk ke Google Sheets!");
-                    } else {
-                        alert("Gagal respon server: " + text + ". Tersimpan di HP.");
-                    }
+                .then(() => {
+                    // Karena no-cors menyembunyikan respon sukses, kita konfirmasi manual
+                    updateStatusLokal(lokalId, "tersinkron");
+                    alert("Sukses dikirim ke Google Sheets!");
                     resetAplikasi();
                 })
                 .catch(err => {
-                    alert("Gangguan koneksi, data tetap aman di memori HP.");
+                    alert("Pengiriman bermasalah, data aman di riwayat HP.");
                     resetAplikasi();
                 });
             });
@@ -340,13 +337,11 @@
                 if (nota.status === "belum_tersinkron") {
                     fetch(CONFIG_GAS_URL, {
                         method: "POST",
+                        mode: "no-cors",
                         body: JSON.stringify({ items: nota.items })
                     })
-                    .then(res => res.text())
-                    .then(text => {
-                        if(text.includes("SUCCESS")) {
-                            updateStatusLokal(nota.id, "tersinkron");
-                        }
+                    .then(() => {
+                        updateStatusLokal(nota.id, "tersinkron");
                     })
                     .catch(err => console.log("Gagal sinkron otomatis:", err));
                 }

@@ -1,46 +1,61 @@
-// js/main.js
-function hitung(el) {
-    let row = el.closest('.row-barang');
-    let q = row.querySelector('.qty').value || 0;
-    let h = row.querySelector('.harga').value || 0;
-    row.querySelector('.total').value = q * h;
-}
-
-function tambahBaris() {
-    let container = document.getElementById('containerBarang');
-    let div = document.createElement('div');
-    div.className = 'row-barang';
-    div.innerHTML = `
-        <input type="text" class="nama" placeholder="Barang">
-        <input type="number" class="qty" placeholder="Qty" oninput="hitung(this)">
-        <input type="number" class="harga" placeholder="Harga" oninput="hitung(this)">
-        <input type="text" class="total" readonly placeholder="Total">
-    `;
-    container.appendChild(div);
-}
-
-async function kirimData(namaToko, tipe) {
-    const url = URL_CONFIG[namaToko];
-    if(!url) return alert("URL tidak ditemukan untuk toko ini!");
+function kirimDataKeGoogleSheets() {
+    // URL Web App yang Anda dapatkan setelah Deploy Ulang Google Script di atas
+    const urlGoogleScript = "https://script.google.com/macros/s/AKfycby7AUYawCKgafTMGcGuuWxwsQbdNLguROdX5FSoVMISSgSx--dV9bparoRFReRb9lxQ/exec";
     
-    let payload = { tipe: tipe, data: [] };
-    
-    if(tipe === 'BARANG') {
-        document.querySelectorAll('.row-barang').forEach(r => {
-            let n = r.querySelector('.nama').value;
-            let q = r.querySelector('.qty').value;
-            let h = r.querySelector('.harga').value;
-            if(n && q && h) payload.data.push({ nama: n, qty: q, harga: h });
-        });
-    } else {
-        payload.data = { 
-            rincian: document.getElementById('rincian').value, 
-            nominal: document.getElementById('nominal').value 
-        };
+    // Ambil data dari input form di halaman HTML Anda
+    // Pastikan ID elemen sesuai dengan input di nj.html Anda
+    const dataProduk = {
+        toko: "NJ", // Penanda toko otomatis
+        namaProduk: document.getElementById("nama_produk").value,
+        harga: document.getElementById("harga_produk").value
+    };
+
+    // Validasi dasar lapangan: Jangan biarkan admin kirim data kosong
+    if (!dataProduk.namaProduk || !dataProduk.harga) {
+        alert("Semua data wajib diisi!");
+        return;
     }
 
-    try {
-        await fetch(url, { method: "POST", body: JSON.stringify(payload) });
-        alert("Berhasil terkirim ke " + namaToko);
-    } catch(e) { alert("Gagal!"); }
+    // Tampilkan indikator loading di tombol agar tidak ditekan berkali-kali
+    const tombolKirim = document.getElementById("btn-kirim");
+    if(tombolKirim) {
+        tombolKirim.disabled = true;
+        tombolKirim.innerText = "Mengirim...";
+    }
+
+    // Eksekusi penembakan data ke Google Sheets dengan setelan Anti-CORS
+    fetch(urlGoogleScript, {
+        method: "POST",
+        // Trik utama: Menggunakan text/plain untuk bypass preflight check CORS browser
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(dataProduk)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Jaringan bermasalah atau URL Script salah.");
+        }
+        return response.json();
+    })
+    .then(hasil => {
+        if (hasil.status === "success") {
+            alert("Sukses! Data NJ berhasil disinkronisasi ke Google Sheets.");
+            // Reset form setelah sukses
+            document.getElementById("form-toko").reset();
+        } else {
+            alert("Gagal menyimpan: " + hasil.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error CORS/Jaringan:", error);
+        alert("Sistem Mendeteksi Masalah: Data gagal terkirim. Pastikan internet stabil.");
+    })
+    .finally(() => {
+        // Kembalikan status tombol seperti semula
+        if(tombolKirim) {
+            tombolKirim.disabled = false;
+            tombolKirim.innerText = "Kirim Data";
+        }
+    });
 }

@@ -17,7 +17,6 @@
         .btn-add { background-color: #4caf50; color: white; }
         .btn-send { background-color: #2e7d32; color: white; margin-top: 20px; font-size: 18px; }
         
-        /* Preview Tabel Sementara */
         .preview-box { margin-top: 20px; border: 1px dashed #2e7d32; padding: 10px; border-radius: 4px; background: #f1f8e9; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -25,14 +24,12 @@
         .text-right { text-align: right; }
         .total-row { font-weight: bold; background-color: #c8e6c9; }
         
-        /* Tab Menu */
         .tabs { display: flex; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; background: #e0e0e0; border: none; cursor: pointer; font-weight: bold; }
         .tab-btn.active { background: #2e7d32; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* Struk Nota Riwayat */
         .nota-card { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .nota-header { border-bottom: 1px dashed #333; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 13px; }
         .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 10px; }
@@ -109,16 +106,12 @@
 </div>
 
 <script>
-    // URL Google Apps Script Anda yang sudah diperbaiki urusan jaringannya
     const CONFIG_GAS_URL = "https://script.google.com/macros/s/AKfycby7AUYawCKgafTMGcGuuWxwsQbdNLguROdX5FSoVMISSgSx--dV9bparoRFReRb9lxQ/exec";
 
-    // Set tanggal hari ini otomatis saat aplikasi dibuka
     document.getElementById('tanggal').valueAsDate = new Date();
-
     let keranjangBarang = [];
     let db;
 
-    // Inisialisasi Database Lokal untuk Offline Mode
     const request = indexedDB.open("NJShoesDB", 1);
     request.onupgradeneeded = function(e) {
         db = e.target.result;
@@ -227,28 +220,30 @@
         };
 
         if (navigator.onLine) {
-            simpanKeDatabaseLokal(notaBaru, "tersinkron", function(lokalId) {
+            simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
+                // Mengirimkan teks polos terbungkus form data untuk mem-bypass blokir browser
                 fetch(CONFIG_GAS_URL, {
                     method: "POST",
-                    mode: "no-cors",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
                     body: JSON.stringify({ items: notaBaru.items })
                 })
-                .then(() => {
-                    alert("Berhasil dikirim! Memproses sinkronisasi ke Google Sheets.");
+                .then(res => res.text())
+                .then(text => {
+                    if(text.includes("SUCCESS")) {
+                        updateStatusLokal(lokalId, "tersinkron");
+                        alert("Berhasil masuk ke Google Sheets!");
+                    } else {
+                        alert("Gagal respon server: " + text + ". Tersimpan di HP.");
+                    }
                     resetAplikasi();
                 })
                 .catch(err => {
-                    updateStatusLokal(lokalId, "belum_tersinkron");
-                    alert("Gagal kirim karena gangguan jaringan, data diamankan di HP.");
+                    alert("Gangguan koneksi, data tetap aman di memori HP.");
                     resetAplikasi();
                 });
             });
         } else {
             simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
-                alert(`⚠️ Anda Sedang Offline!\nNota ${formatNomorNota(lokalId)} berhasil disimpan aman di lokal HP.`);
+                alert(`⚠️ Sedang Offline!\nNota ${formatNomorNota(lokalId)} tersimpan di lokal HP.`);
                 resetAplikasi();
             });
         }
@@ -345,16 +340,15 @@
                 if (nota.status === "belum_tersinkron") {
                     fetch(CONFIG_GAS_URL, {
                         method: "POST",
-                        mode: "no-cors",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
                         body: JSON.stringify({ items: nota.items })
                     })
-                    .then(() => {
-                        updateStatusLokal(nota.id, "tersinkron");
+                    .then(res => res.text())
+                    .then(text => {
+                        if(text.includes("SUCCESS")) {
+                            updateStatusLokal(nota.id, "tersinkron");
+                        }
                     })
-                    .catch(err => console.log("Gagal sinkronisasi otomatis, mencoba lagi nanti...", err));
+                    .catch(err => console.log("Gagal sinkron otomatis:", err));
                 }
             });
         };

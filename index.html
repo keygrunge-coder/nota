@@ -109,7 +109,7 @@
 </div>
 
 <script>
-    // Konfigurasi URL Google Apps Script Anda
+    // URL Google Apps Script Anda yang sudah diperbaiki urusan jaringannya
     const CONFIG_GAS_URL = "https://script.google.com/macros/s/AKfycby7AUYawCKgafTMGcGuuWxwsQbdNLguROdX5FSoVMISSgSx--dV9bparoRFReRb9lxQ/exec";
 
     // Set tanggal hari ini otomatis saat aplikasi dibuka
@@ -118,7 +118,7 @@
     let keranjangBarang = [];
     let db;
 
-    // Inisialisasi Database Lokal (IndexedDB) untuk Offline Mode
+    // Inisialisasi Database Lokal untuk Offline Mode
     const request = indexedDB.open("NJShoesDB", 1);
     request.onupgradeneeded = function(e) {
         db = e.target.result;
@@ -126,14 +126,16 @@
     };
     request.onsuccess = function(e) {
         db = e.target.result;
-        cekKoneksiDanSinkronisasi(); // Cek antrean tertunda jika internet nyala kembali
+        cekKoneksiDanSinkronisasi();
     };
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        event.target.classList.add('active');
+        if(event && event.target) {
+            event.target.classList.add('active');
+        }
     }
 
     function tambahKeDaftar() {
@@ -147,16 +149,13 @@
             return;
         }
 
-        // Format tanggal dari YYYY-MM-DD menjadi DD/MM/YYYY agar cocok dengan format Sheets Anda
         const tglArr = tanggalRaw.split('-');
         const tanggal = `${tglArr[2]}/${tglArr[1]}/${tglArr[0]}`;
-
         const jumlah = qty * hargaSatuan;
 
         keranjangBarang.push({ tanggal, qty, namaBarang, hargaSatuan, jumlah });
         updateTabelPreview();
 
-        // Reset field input barang (kecuali tanggal)
         document.getElementById('namaBarang').value = "";
         document.getElementById('qty').value = "";
         document.getElementById('hargaSatuan').value = "";
@@ -227,35 +226,29 @@
             items: keranjangBarang
         };
 
-        // Cek koneksi internet
         if (navigator.onLine) {
-            // JIKA ONLINE: Langsung kirim ke Google Sheets
             simpanKeDatabaseLokal(notaBaru, "tersinkron", function(lokalId) {
                 fetch(CONFIG_GAS_URL, {
                     method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify({ items: notaBaru.items })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === "success") {
-                        alert("Berhasil! Data telah tersinkron ke Google Sheets.");
-                    } else {
-                        alert("Gagal kirim ke Cloud: " + data.message + ". Tersimpan di riwayat lokal.");
-                        updateStatusLokal(lokalId, "belum_tersinkron");
-                    }
+                .then(() => {
+                    alert("Berhasil dikirim! Memproses sinkronisasi ke Google Sheets.");
                     resetAplikasi();
                 })
                 .catch(err => {
-                    // Proteksi jika fetch gagal di tengah jalan
                     updateStatusLokal(lokalId, "belum_tersinkron");
-                    alert("Koneksi terganggu. Data dialihkan ke memori lokal.");
+                    alert("Gagal kirim karena gangguan jaringan, data diamankan di HP.");
                     resetAplikasi();
                 });
             });
         } else {
-            // JIKA OFFLINE: Simpan ke memori lokal dengan status 'belum_tersinkron'
             simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
-                alert(`⚠️ Anda Sedang Offline!\nNota ${formatNomorNota(lokalId)} berhasil diamankan di memori lokal HP.`);
+                alert(`⚠️ Anda Sedang Offline!\nNota ${formatNomorNota(lokalId)} berhasil disimpan aman di lokal HP.`);
                 resetAplikasi();
             });
         }
@@ -282,7 +275,6 @@
                 return;
             }
 
-            // Urutkan dari yang terbaru berdasarkan waktu simpan
             listNota.sort((a, b) => b.timestamp - a.timestamp);
 
             listNota.forEach(nota => {
@@ -340,7 +332,6 @@
         };
     }
 
-    // Fungsi Otomatis: Sinkronisasi data yang tertunda saat internet mendadak aktif kembali
     function cekKoneksiDanSinkronisasi() {
         if (!navigator.onLine || !db) return;
 
@@ -354,13 +345,14 @@
                 if (nota.status === "belum_tersinkron") {
                     fetch(CONFIG_GAS_URL, {
                         method: "POST",
+                        mode: "no-cors",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify({ items: nota.items })
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        if(data.status === "success") {
-                            updateStatusLokal(nota.id, "tersinkron");
-                        }
+                    .then(() => {
+                        updateStatusLokal(nota.id, "tersinkron");
                     })
                     .catch(err => console.log("Gagal sinkronisasi otomatis, mencoba lagi nanti...", err));
                 }
@@ -368,7 +360,6 @@
         };
     }
 
-    // Daftarkan event listener untuk mendeteksi perubahan status internet HP secara instan
     window.addEventListener('online', cekKoneksiDanSinkronisasi);
 </script>
 

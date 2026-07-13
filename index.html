@@ -221,20 +221,27 @@
 
         if (navigator.onLine) {
             simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
-                // Format Pengiriman JSON murni khusus untuk doPost(e) andalan Anda
+                // Perbaikan Total: Kirim JSON Jujur dengan Header Content-Type & Tanpa no-cors mematikan
                 fetch(CONFIG_GAS_URL, {
                     method: "POST",
-                    mode: "no-cors", 
+                    headers: {
+                        "Content-Type": "text/plain" // Google Apps Script membaca objek POST secara optimal lewat tipe ini
+                    },
                     body: JSON.stringify({ items: notaBaru.items })
                 })
-                .then(() => {
-                    // Karena no-cors menyembunyikan respon sukses, kita konfirmasi manual
-                    updateStatusLokal(lokalId, "tersinkron");
-                    alert("Sukses dikirim ke Google Sheets!");
-                    resetAplikasi();
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "success") {
+                        updateStatusLokal(lokalId, "tersinkron");
+                        alert("Sukses! Data benar-benar masuk ke Google Sheets.");
+                        resetAplikasi();
+                    } else {
+                        alert("Server Menolak: " + data.message);
+                    }
                 })
                 .catch(err => {
-                    alert("Pengiriman bermasalah, data aman di riwayat HP.");
+                    console.error("CORS / Network Error: ", err);
+                    alert("Gagal kirim. Data diamankan di memori lokal HP Anda.");
                     resetAplikasi();
                 });
             });
@@ -337,11 +344,14 @@
                 if (nota.status === "belum_tersinkron") {
                     fetch(CONFIG_GAS_URL, {
                         method: "POST",
-                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain" },
                         body: JSON.stringify({ items: nota.items })
                     })
-                    .then(() => {
-                        updateStatusLokal(nota.id, "tersinkron");
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.status === "success") {
+                            updateStatusLokal(nota.id, "tersinkron");
+                        }
                     })
                     .catch(err => console.log("Gagal sinkron otomatis:", err));
                 }

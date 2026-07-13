@@ -1,14 +1,19 @@
 {
-  "name": "PWA Nota Manager",
-  "short_name": "NotaApp",
+  "name": "NJ Shoes Kasir",
+  "short_name": "NJ Shoes",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007bff",
+  "background_color": "#f5f5f5",
+  "theme_color": "#2e7d32",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "https://via.placeholder.com/192/2e7d32/ffffff?text=NJ",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/2e7d32/ffffff?text=NJShoes",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]

@@ -3,364 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NJ SHOES - Nota Input</title>
+    <title>NOTA - NJ SHOES</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2e7d32">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 15px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2e7d32; margin-top: 0; border-bottom: 3px solid #4caf50; padding-bottom: 10px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-add { background-color: #4caf50; color: white; }
-        .btn-send { background-color: #2e7d32; color: white; margin-top: 20px; font-size: 18px; }
-        
-        .preview-box { margin-top: 20px; border: 1px dashed #2e7d32; padding: 10px; border-radius: 4px; background: #f1f8e9; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #e8f5e9; }
-        .text-right { text-align: right; }
-        .total-row { font-weight: bold; background-color: #c8e6c9; }
-        
-        .tabs { display: flex; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; text-align: center; background: #e0e0e0; border: none; cursor: pointer; font-weight: bold; }
-        .tab-btn.active { background: #2e7d32; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .nota-card { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .nota-header { border-bottom: 1px dashed #333; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 13px; }
-        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 10px; }
-        .status-sync { background-color: #c8e6c9; color: #2e7d32; }
-        .status-pending { background-color: #ffe0b2; color: #e65100; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 10px;
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 NOTA</h1>
+            <p>NJ SHOES - Input Penjualan</p>
+        </div>
 
-<div class="container">
-    <h2>NJ SHOES PWA</h2>
-    
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('input-tab')">Input Barang</button>
-        <button class="tab-btn" onclick="switchTab('history-tab'); renderHistory();">Riwayat Nota</button>
+        <div id="alert" class="alert"></div>
+
+        <form id="notaForm">
+            <div class="form-group">
+                <label for="tgl">Tanggal</label>
+                <input type="date" id="tgl" name="tgl" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="qty">QTY</label>
+                    <input type="number" id="qty" name="qty" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="harga">Harga (Rp)</label>
+                    <input type="number" id="harga" name="harga" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="namaBarang">Nama Barang</label>
+                <input type="text" id="namaBarang" name="namaBarang" placeholder="Contoh: 883 smile 43-44" required>
+            </div>
+
+            <div class="form-group">
+                <label for="total">Total (Otomatis)</label>
+                <input type="number" id="total" name="total" readonly>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <span>Menyimpan...</span>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">💾 Simpan</button>
+            <button type="reset" class="btn-reset">🔄 Reset</button>
+        </form>
     </div>
 
-    <!-- TAB INPUT -->
-    <div id="input-tab" class="tab-content active">
-        <div class="form-group">
-            <label>Tanggal</label>
-            <input type="date" id="tanggal">
-        </div>
-        <div class="form-group">
-            <label>Nama Barang (Sepatu)</label>
-            <input type="text" id="namaBarang" placeholder="Contoh: 883 smile 43-44" list="barang-saran">
-            <datalist id="barang-saran">
-                <option value="883 smile 43-44">
-                <option value="sepatu hitam 29-34">
-                <option value="D-03 macker putih 32-33">
-            </datalist>
-        </div>
-        <div class="form-group">
-            <label>QTY</label>
-            <input type="number" id="qty" placeholder="Jumlah barang" min="1">
-        </div>
-        <div class="form-group">
-            <label>Harga Satuan (Rp)</label>
-            <input type="number" id="hargaSatuan" placeholder="Harga per pasang">
-        </div>
-        
-        <button class="btn-add" onclick="tambahKeDaftar()">➕ Masukkan Daftar</button>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7AUYawCKgafTMGcGuuWxwsQbdNLguROdX5FSoVMISSgSx--dV9bparoRFReRb9lxQ/exec";
 
-        <!-- Preview Keranjang -->
-        <div id="preview-section" style="display:none;" class="preview-box">
-            <h3>Daftar Sementara (Nota Baru)</h3>
-            <table id="tabel-preview">
-                <thead>
-                    <tr>
-                        <th>Barang</th>
-                        <th>QTY</th>
-                        <th>Harga</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody id="body-preview"></tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="3">TOTALAN NOTA</td>
-                        <td id="total-preview" class="text-right">0</td>
-                    </tr>
-                </tfoot>
-            </table>
-            <button class="btn-send" onclick="kirimSemuaNota()">💾 Simpan Semua ke Google Sheets</button>
-        </div>
-    </div>
+        // Set tanggal hari ini sebagai default
+        document.getElementById("tgl").valueAsDate = new Date();
 
-    <!-- TAB RIWAYAT -->
-    <div id="history-tab" class="tab-content">
-        <div id="daftar-riwayat">
-            <p style="text-align:center; color:#666;">Belum ada riwayat nota.</p>
-        </div>
-    </div>
-</div>
+        // Auto-calculate total
+        document.getElementById("qty").addEventListener("change", calculateTotal);
+        document.getElementById("harga").addEventListener("change", calculateTotal);
 
-<script>
-    const CONFIG_GAS_URL = "https://script.google.com/macros/s/AKfycby7AUYawCKgafTMGcGuuWxwsQbdNLguROdX5FSoVMISSgSx--dV9bparoRFReRb9lxQ/exec";
-
-    document.getElementById('tanggal').valueAsDate = new Date();
-    let keranjangBarang = [];
-    let db;
-
-    const request = indexedDB.open("NJShoesDB", 1);
-    request.onupgradeneeded = function(e) {
-        db = e.target.result;
-        db.createObjectStore("notaStore", { keyPath: "id", autoIncrement: true });
-    };
-    request.onsuccess = function(e) {
-        db = e.target.result;
-        cekKoneksiDanSinkronisasi();
-    };
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        if(event && event.target) {
-            event.target.classList.add('active');
-        }
-    }
-
-    function tambahKeDaftar() {
-        const tanggalRaw = document.getElementById('tanggal').value;
-        const namaBarang = document.getElementById('namaBarang').value;
-        const qty = parseInt(document.getElementById('qty').value);
-        const hargaSatuan = parseInt(document.getElementById('hargaSatuan').value);
-
-        if (!tanggalRaw || !namaBarang || !qty || !hargaSatuan) {
-            alert("Harap isi semua kolom!");
-            return;
+        function calculateTotal() {
+            const qty = parseInt(document.getElementById("qty").value) || 0;
+            const harga = parseInt(document.getElementById("harga").value) || 0;
+            const total = qty * harga;
+            document.getElementById("total").value = total;
         }
 
-        const tglArr = tanggalRaw.split('-');
-        const tanggal = `${tglArr[2]}/${tglArr[1]}/${tglArr[0]}`;
-        const jumlah = qty * hargaSatuan;
+        // Submit form
+        document.getElementById("notaForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        keranjangBarang.push({ tanggal, qty, namaBarang, hargaSatuan, jumlah });
-        updateTabelPreview();
+            const tgl = document.getElementById("tgl").value;
+            const qty = document.getElementById("qty").value;
+            const namaBarang = document.getElementById("namaBarang").value;
+            const harga = document.getElementById("harga").value;
+            const total = document.getElementById("total").value;
 
-        document.getElementById('namaBarang').value = "";
-        document.getElementById('qty').value = "";
-        document.getElementById('hargaSatuan').value = "";
-    }
+            // Format tanggal ke DD/MM/YYYY
+            const date = new Date(tgl);
+            const tglFormatted = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 
-    function updateTabelPreview() {
-        const tbody = document.getElementById('body-preview');
-        tbody.innerHTML = "";
-        let totalNota = 0;
+            const data = {
+                tgl: tglFormatted,
+                qty: parseInt(qty),
+                namaBarang: namaBarang,
+                harga: parseInt(harga),
+                total: parseInt(total)
+            };
 
-        if (keranjangBarang.length === 0) {
-            document.getElementById('preview-section').style.display = "none";
-            return;
-        }
+            showLoading(true);
+            showAlert("", "");
 
-        keranjangBarang.forEach(item => {
-            totalNota += item.jumlah;
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.namaBarang}</td>
-                    <td>${item.qty}</td>
-                    <td>${item.hargaSatuan.toLocaleString('id-ID')}</td>
-                    <td class="text-right">${item.jumlah.toLocaleString('id-ID')}</td>
-                </tr>
-            `;
-        });
-
-        document.getElementById('total-preview').innerText = totalNota.toLocaleString('id-ID');
-        document.getElementById('preview-section').style.display = "block";
-    }
-
-    function simpanKeDatabaseLokal(notaData, statusSync, callback) {
-        const transaction = db.transaction(["notaStore"], "readwrite");
-        const store = transaction.objectStore("notaStore");
-        
-        notaData.status = statusSync;
-        notaData.timestamp = new Date().getTime();
-        
-        const req = store.add(notaData);
-        req.onsuccess = function() {
-            if(callback) callback(req.result);
-        };
-    }
-
-    function updateStatusLokal(id, statusSync) {
-        const transaction = db.transaction(["notaStore"], "readwrite");
-        const store = transaction.objectStore("notaStore");
-        const req = store.get(id);
-        req.onsuccess = function() {
-            const data = req.result;
-            if (data) {
-                data.status = statusSync;
-                store.put(data);
-                renderHistory();
-            }
-        };
-    }
-
-    function formatNomorNota(id) {
-        return "#" + String(id).padStart(4, '0');
-    }
-
-    function kirimSemuaNota() {
-        if (keranjangBarang.length === 0) return;
-
-        const notaBaru = {
-            tanggalNota: keranjangBarang[0].tanggal,
-            items: keranjangBarang
-        };
-
-        if (navigator.onLine) {
-            simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
-                // Perbaikan Total: Kirim JSON Jujur dengan Header Content-Type & Tanpa no-cors mematikan
-                fetch(CONFIG_GAS_URL, {
+            try {
+                const response = await fetch(SCRIPT_URL, {
                     method: "POST",
                     headers: {
-                        "Content-Type": "text/plain" // Google Apps Script membaca objek POST secara optimal lewat tipe ini
+                        "Content-Type": "text/plain"
                     },
-                    body: JSON.stringify({ items: notaBaru.items })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === "success") {
-                        updateStatusLokal(lokalId, "tersinkron");
-                        alert("Sukses! Data benar-benar masuk ke Google Sheets.");
-                        resetAplikasi();
-                    } else {
-                        alert("Server Menolak: " + data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error("CORS / Network Error: ", err);
-                    alert("Gagal kirim. Data diamankan di memori lokal HP Anda.");
-                    resetAplikasi();
-                });
-            });
-        } else {
-            simpanKeDatabaseLokal(notaBaru, "belum_tersinkron", function(lokalId) {
-                alert(`⚠️ Sedang Offline!\nNota ${formatNomorNota(lokalId)} tersimpan di lokal HP.`);
-                resetAplikasi();
-            });
-        }
-    }
-
-    function resetAplikasi() {
-        keranjangBarang = [];
-        updateTabelPreview();
-        document.getElementById('tanggal').valueAsDate = new Date();
-    }
-
-    function renderHistory() {
-        const container = document.getElementById('daftar-riwayat');
-        container.innerHTML = "";
-
-        const transaction = db.transaction(["notaStore"], "readonly");
-        const store = transaction.objectStore("notaStore");
-        const requestAll = store.getAll();
-
-        requestAll.onsuccess = function() {
-            const listNota = requestAll.result;
-            if (listNota.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#666;">Belum ada riwayat nota.</p>`;
-                return;
-            }
-
-            listNota.sort((a, b) => b.timestamp - a.timestamp);
-
-            listNota.forEach(nota => {
-                let totalNota = 0;
-                let barisBarangHtml = "";
-
-                nota.items.forEach(item => {
-                    totalNota += item.jumlah;
-                    barisBarangHtml += `
-                        <tr>
-                            <td>${item.tanggal}</td>
-                            <td>${item.qty}</td>
-                            <td>${item.namaBarang}</td>
-                            <td>${item.hargaSatuan.toLocaleString('id-ID')}</td>
-                            <td class="text-right">${item.jumlah.toLocaleString('id-ID')}</td>
-                        </tr>
-                    `;
+                    body: JSON.stringify(data)
                 });
 
-                const statusText = nota.status === "tersinkron" 
-                    ? "[ ✓ Tersinkron ke Google Sheets ]" 
-                    : "[ ⏳ Belum Tersinkron ke Google Sheets ]";
-                const statusClass = nota.status === "tersinkron" ? "status-sync" : "status-pending";
+                const result = await response.json();
 
-                container.innerHTML += `
-                    <div class="nota-card">
-                        <div class="nota-header">
-                            <strong>Tanggal: ${nota.tanggalNota}</strong>
-                            <strong>No. Nota: ${formatNomorNota(nota.id)}</strong>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Tgl</th>
-                                    <th>QTY</th>
-                                    <th>Nama Barang</th>
-                                    <th>Harga</th>
-                                    <th>Jumlah</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${barisBarangHtml}
-                            </tbody>
-                            <tfoot>
-                                <tr class="total-row">
-                                    <td colspan="4">TOTALAN NOTA :</td>
-                                    <td class="text-right">Rp ${totalNota.toLocaleString('id-ID')}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        <div class="status-badge ${statusClass}">${statusText}</div>
-                    </div>
-                `;
-            });
-        };
-    }
-
-    function cekKoneksiDanSinkronisasi() {
-        if (!navigator.onLine || !db) return;
-
-        const transaction = db.transaction(["notaStore"], "readwrite");
-        const store = transaction.objectStore("notaStore");
-        const requestAll = store.getAll();
-
-        requestAll.onsuccess = function() {
-            const listNota = requestAll.result;
-            listNota.forEach(nota => {
-                if (nota.status === "belum_tersinkron") {
-                    fetch(CONFIG_GAS_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain" },
-                        body: JSON.stringify({ items: nota.items })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if(data.status === "success") {
-                            updateStatusLokal(nota.id, "tersinkron");
-                        }
-                    })
-                    .catch(err => console.log("Gagal sinkron otomatis:", err));
+                if (result.status === "success") {
+                    showAlert("✓ " + result.message, "success");
+                    document.getElementById("notaForm").reset();
+                    document.getElementById("tgl").valueAsDate = new Date();
+                    setTimeout(() => showAlert("", ""), 3000);
+                } else {
+                    showAlert("✗ " + result.message, "error");
                 }
-            });
-        };
-    }
+            } catch (error) {
+                console.error("Error:", error);
+                showAlert("✗ Error: " + error.message, "error");
+            } finally {
+                showLoading(false);
+            }
+        });
 
-    window.addEventListener('online', cekKoneksiDanSinkronisasi);
-</script>
+        function showLoading(show) {
+            document.getElementById("loading").style.display = show ? "block" : "none";
+            document.getElementById("submitBtn").disabled = show;
+        }
 
+        function showAlert(message, type) {
+            const alertEl = document.getElementById("alert");
+            alertEl.textContent = message;
+            alertEl.className = "alert";
+            if (type) {
+                alertEl.classList.add(type);
+            }
+        }
+    </script>
 </body>
 </html>
